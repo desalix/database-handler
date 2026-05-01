@@ -38,12 +38,20 @@ public class BBDDManager {
                 } catch (BBDDException e) {
                     result.add("Task:" + e.when() + ";" + e.getMessage() + ";");
                     if (!autoCommit) {
-                        conn.commit();
+                        try {
+                            conn.commit();
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 } catch (SQLException e) {
                     result.add("SQL:" + e.getMessage() + ";");
                     if (!autoCommit) {
-                        conn.rollback();
+                        try {
+                            conn.rollback();
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 }
             }
