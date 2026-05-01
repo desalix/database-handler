@@ -25,6 +25,7 @@ public class ConsultaConFiltro extends ConsultaConResultado<Properties> {
                      "JOIN modulo m ON i.curso_id = m.curso_id AND i.n_modulo = m.n_modulo " +
                      "WHERE m.titulo LIKE ? " +
                      "ORDER BY p.apellido1 ASC";
+                    
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, "%" + data + "%");
             try (ResultSet rs = pstmt.executeQuery()) {

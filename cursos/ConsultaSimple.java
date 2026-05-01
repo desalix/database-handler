@@ -19,11 +19,12 @@ public class ConsultaSimple extends ConsultaConResultado<Properties> {
         if (!data.equalsIgnoreCase("ASC") && !data.equalsIgnoreCase("DESC")) {
             throw new BBDDException(null, "ordenando");
         }
+        
         resultado = new ArrayList<>();
-        String sql = "SELECT nombre, apellido1, apellido2 FROM profesor ORDER BY apellido1 "
-                     + data.toUpperCase();
+        String sql = "SELECT nombre, apellido1, apellido2 FROM profesor ORDER BY apellido1 " + data.toUpperCase();
+
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+            ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 resultado.add(new Properties(
                     rs.getString("nombre"),
