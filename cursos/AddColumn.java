@@ -1,4 +1,3 @@
-
 package cursos;
 
 import java.sql.*;
@@ -16,5 +15,8 @@ public class AddColumn implements DataBaseTask {
      */
     @Override
     public void run(Connection conn, String data) throws BBDDException, SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("ALTER TABLE edificio ADD COLUMN foto BLOB NULL");
+        }
     }
 }

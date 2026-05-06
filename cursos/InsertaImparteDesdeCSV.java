@@ -2,70 +2,57 @@ package cursos;
 
 import java.io.FileInputStream;
 import java.sql.*;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class InsertaImparteDesdeCSV implements DataBaseTask {
     private static final String SQL =
-    "INSERT INTO imparte (profesor_id, curso_id, n_modulo, aula_id, fecha) " +
-    "VALUES (?, ?, ?, ?, ?)";
+        "INSERT INTO imparte (profesor_id, curso_id, n_modulo, aula_id, fecha) " +
+        "VALUES (?, ?, ?, ?, ?)";
 
     @Override
     public void run(Connection conn, String data) throws BBDDException, SQLException {
         try (FileInputStream fis = new FileInputStream(data);
-            Scanner sc = new Scanner(fis);
-            PreparedStatement stmt = conn.prepareStatement(SQL)) {
-            
-            int lineNumber = 0;
+             Scanner sc = new Scanner(fis);
+             PreparedStatement stmt = conn.prepareStatement(SQL)) {
             while (sc.hasNextLine()) {
-                lineNumber++;
                 String line = sc.nextLine().trim();
                 if (line.isEmpty()) continue;
-                insertarLinea(stmt, line, lineNumber);
+                insertarLinea(stmt, line);
             }
-        } catch (SQLException e) {
-            throw new BBDDException(e, "Error al insertar en la base de datos: " + e.getMessage());
-        } catch (BBDDException e) {
+        } catch (BBDDException | SQLException e) {
             throw e;
         } catch (Exception e) {
-            throw new BBDDException(e, "Error al leer el archivo CSV: " + e.getMessage());
+            throw new BBDDException(e, "Insertando");
         }
     }
 
-        private void insertarLinea(PreparedStatement ps, String linea, int numLinea)
+    private void insertarLinea(PreparedStatement stmt, String linea)
             throws BBDDException, SQLException {
- 
-        int profesorId;
-        int cursoId;
-        int nModulo;
-        int aulaId;
+        int profesorId, cursoId, nModulo, aulaId;
         java.sql.Date fecha;
- 
         try {
             String[] campos = linea.split(",");
-            if (campos.length != 5) {
-                throw new IllegalArgumentException(
-                    "Se esperaban 5 campos en la linea " + numLinea
-                    + ", se han encontrado " + campos.length);
-            }
             profesorId = Integer.parseInt(campos[0].trim());
-            cursoId = Integer.parseInt(campos[1].trim());
-            nModulo = Integer.parseInt(campos[2].trim());
-            aulaId = Integer.parseInt(campos[3].trim());
- 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            sdf.setLenient(false);
-            java.util.Date parsed = sdf.parse(campos[4].trim());
-            fecha = new java.sql.Date(parsed.getTime());
+            cursoId    = Integer.parseInt(campos[1].trim());
+            nModulo    = Integer.parseInt(campos[2].trim());
+            aulaId     = Integer.parseInt(campos[3].trim());
+            String[] partesFecha = campos[4].trim().split("-");
+            int year  = Integer.parseInt(partesFecha[0].trim());
+            int month = Integer.parseInt(partesFecha[1].trim());
+            int day   = Integer.parseInt(partesFecha[2].trim());
+            fecha = Date.valueOf(LocalDate.of(year, month, day));
         } catch (Exception e) {
-            throw new BBDDException(e, "Error extrayendo los datos de la linea " + numLinea + " del CSV");
+            throw new BBDDException(e, "Insertando");
         }
- 
-        ps.setInt(1, profesorId);
-        ps.setInt(2, cursoId);
-        ps.setInt(3, nModulo);
-        ps.setInt(4, aulaId);
-        ps.setDate(5, fecha);
-        ps.executeUpdate();
+        stmt.setInt(1, profesorId);
+        stmt.setInt(2, cursoId);
+        stmt.setInt(3, nModulo);
+        stmt.setInt(4, aulaId);
+        stmt.setDate(5, fecha);
+        int rows = stmt.executeUpdate();
+        if (rows != 1) {
+            throw new SQLException("Expected 1 row inserted, got " + rows);
+        }
     }
 }
