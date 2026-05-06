@@ -1,7 +1,6 @@
 package cursos;
 
 import java.sql.*;
-
 import java.util.*;
 
 public class ConsultaSimple extends ConsultaConResultado<Properties> {
@@ -17,5 +16,21 @@ public class ConsultaSimple extends ConsultaConResultado<Properties> {
      */
     @Override
     public void run(Connection conn, String data) throws BBDDException, SQLException {
+        if (!data.equalsIgnoreCase("ASC") && !data.equalsIgnoreCase("DESC")) {
+            throw new BBDDException(null, "ordenando");
+        }
+        resultado = new ArrayList<>();
+        String sql = "SELECT nombre, apellido1, apellido2 FROM profesor ORDER BY apellido1 "
+                     + data.toUpperCase();
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                resultado.add(new Properties(
+                    rs.getString("nombre"),
+                    rs.getString("apellido1"),
+                    rs.getString("apellido2")
+                ));
+            }
+        }
     }
 }
